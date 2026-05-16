@@ -1,0 +1,286 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        @ViewData["Title"] - Connectify
+    </title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/Connectify.styles.css"
+          asp-append-version="true" />
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fb;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        .navbar-custom {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .brand-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0d6efd !important;
+        }
+
+        .nav-link-custom {
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-link-custom:hover {
+            color: #0d6efd !important;
+        }
+
+        .user-badge {
+            background: #0d6efd;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .footer-custom {
+            background: white;
+            border-top: 1px solid #e9ecef;
+            padding: 18px 0;
+        }
+
+        .footer-custom a {
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header>
+
+        <nav class="navbar navbar-expand-lg navbar-custom sticky-top shadow-sm">
+
+            <div class="container">
+
+                <!-- LOGO -->
+                <a class="navbar-brand brand-logo"
+                   asp-controller="Home"
+                   asp-action="Index">
+
+                    🚀 Connectify
+
+                </a>
+
+                <!-- MOBILE TOGGLER -->
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarContent">
+
+                    <span class="navbar-toggler-icon"></span>
+
+                </button>
+
+                <!-- NAVBAR CONTENT -->
+                <div class="collapse navbar-collapse"
+                     id="navbarContent">
+
+                    <!-- LEFT -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                        <li class="nav-item">
+
+                            <a class="nav-link nav-link-custom"
+                               asp-controller="Home"
+                               asp-action="Index">
+
+                                Home
+
+                            </a>
+
+                        </li>
+
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+
+                                <a class="nav-link nav-link-custom"
+                                   asp-controller="Chat"
+                                   asp-action="Index">
+
+                                    Global Chat
+
+                                </a>
+
+                            </li>
+                        }
+
+                        <li class="nav-item">
+
+                            <a class="nav-link nav-link-custom"
+                               asp-controller="Home"
+                               asp-action="Privacy">
+
+                                Privacy
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+
+                    <!-- RIGHT -->
+                    <div class="d-flex align-items-center gap-3">
+
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <span class="user-badge">
+
+                                👋 @User.Identity.Name
+
+                            </span>
+
+                            <form asp-controller="Auth"
+                                  asp-action="Logout"
+                                  method="post">
+
+                                <button type="submit"
+                                        class="btn btn-danger rounded-pill px-4">
+
+                                    Logout
+
+                                </button>
+
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="Auth"
+                               asp-action="Login"
+                               class="btn btn-outline-primary rounded-pill px-4">
+
+                                Login
+
+                            </a>
+
+                            <a asp-controller="Auth"
+                               asp-action="Register"
+                               class="btn btn-primary rounded-pill px-4 shadow-sm">
+
+                                Get Started
+
+                            </a>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+    </header>
+
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <div class="container py-4">
+
+            <main role="main">
+
+                @RenderBody()
+
+            </main>
+
+        </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+    <footer class="footer-custom">
+
+        <div class="container">
+
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+
+                <div class="text-muted">
+
+                    © 2026 Connectify —
+                    Real-Time Chat Application
+
+                </div>
+
+                <div>
+
+                    <a asp-controller="Home"
+                       asp-action="Privacy"
+                       class="text-primary fw-semibold">
+
+                        Privacy Policy
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- SCRIPTS -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+
+</html>
