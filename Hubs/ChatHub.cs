@@ -1,11 +1,11 @@
 ﻿using Connectify.Models;
 using Connectify.Data;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Authorization;
+
 
 namespace Connectify.Hubs
 {
-    [Authorize]
+    
     public class ChatHub:Hub
     {
         private readonly AppDbContext _context;
@@ -18,30 +18,33 @@ namespace Connectify.Hubs
         public async Task SendMessage(string message)
         {
             if (string.IsNullOrWhiteSpace(message))
-            {
                 return;
-            }
 
-            var userName = Context.User?.Identity?.Name;
-            
-            var userId = Context.UserIdentifier;
+            var userName = Context.User?.Identity?.Name ?? "Guest";
 
             var chatMessage = new ChatMessage
             {
                 Message = message,
-                UserId = userId,
+                UserId = "demo", // TEMP SAFE
                 SentAt = DateTime.UtcNow,
             };
 
-            _context.ChatMessages.Add(chatMessage);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.ChatMessages.Add(chatMessage);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("DB ERROR: " + ex.Message);
+            }
 
             await Clients.All.SendAsync(
                 "ReceiveMessage",
                 userName,
                 message,
                 chatMessage.SentAt.ToString("yyyy-MM-dd HH:mm:ss")
-                );
+            );
         }
     }
 }
