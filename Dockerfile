@@ -1,13 +1,13 @@
 # Build Stage
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 WORKDIR /src
 
 COPY . .
 
-RUN dotnet restore
+RUN dotnet restore "ChatRoom.csproj"
 
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish "ChatRoom.csproj" -c Release -o /app/publish
 
 
 # Runtime Stage
