@@ -1,4 +1,4 @@
-﻿using Connectify.Web.ViewModels;
+﻿using Connectify.ViewModels;
 using Connectify.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;

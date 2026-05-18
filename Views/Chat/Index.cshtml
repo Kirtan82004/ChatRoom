@@ -1,106 +1,89 @@
-﻿@model List<Connectify.Web.ViewModels.ChatMessageViewModel>
+﻿@model List<Connectify.DTOs.ChatMessageDto>
 
 @{
-    ViewData["Title"] = "Global Chat";
+    var currentUserId =
+        ViewBag.CurrentUserId;
 }
 
-<div class="container py-4">
+<div class="chat-wrapper">
 
-    <div class="row justify-content-center">
+    <!-- HEADER -->
+    <div class="chat-header">
 
-        <div class="col-lg-10">
+        <div>
+            Global Chat Room
+        </div>
 
-            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div id="onlineCount">
+            Online: 0
+        </div>
 
-                <!-- Header -->
-                <div class="bg-primary text-white p-4">
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-                        <div>
-                            <h3 class="mb-1">
-                                Global Chat Room
-                            </h3>
-
-                            <small class="opacity-75">
-                                Real-time messaging with SignalR
-                            </small>
-                        </div>
-
-                        <div class="text-end">
-                            <span class="badge bg-light text-dark px-3 py-2">
-                                🟢 Live
-                            </span>
-                        </div>
-
-                    </div>
-
-                </div>
+    </div>
 
 
-                <!-- Chat Body -->
-                <div id="chatBox"
-                     class="p-4 bg-light"
-                     style="height: 500px; overflow-y: auto;">
+    <!-- MAIN LAYOUT -->
+    <div class="chat-layout">
 
-                    @foreach (var item in Model)
-                    {
-                        <div class="mb-4">
+        <!-- ONLINE USERS -->
+        <div class="online-users">
 
-                            <div class="d-flex align-items-center mb-1">
+            <h5>Online Users</h5>
 
-                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                                     style="width:40px; height:40px; font-weight:bold;">
+            <ul id="usersList"></ul>
 
-                                    @item.UserName.Substring(0, 1).ToUpper()
-                                </div>
+        </div>
 
-                                <div>
 
-                                    <strong class="d-block">
-                                        @item.UserName
-                                    </strong>
+        <!-- CHAT SECTION -->
+        <div class="chat-main">
 
-                                    <small class="text-muted">
-                                        @item.SentAt.ToLocalTime().ToString("hh:mm tt")
-                                    </small>
+            <!-- CHAT BODY -->
+            <div id="chatBox" class="chat-body">
 
-                                </div>
+                @foreach (var item in Model)
+                {
+                    var isMine = item.UserId == currentUserId;
 
+                    <div class="message-container @(isMine ? "mine" : "other")">
+
+                        <div class="message-bubble">
+
+                            <div class="message-user">
+                                @item.UserName
                             </div>
 
-                            <div class="bg-white shadow-sm rounded-4 p-3 ms-5 border">
-
+                            <div class="message-text">
                                 @item.Message
+                            </div>
 
+                            <div class="message-time">
+                                @item.SentAt.ToLocalTime().ToString("hh:mm tt")
                             </div>
 
                         </div>
-                    }
-
-                </div>
-
-
-                <!-- Message Input -->
-                <div class="border-top bg-white p-3">
-
-                    <div class="input-group">
-
-                        <input type="text"
-                               id="messageInput"
-                               class="form-control form-control-lg border-0 shadow-sm"
-                               placeholder="Type your message..." />
-
-                        <button class="btn btn-primary px-4"
-                                id="sendBtn">
-
-                            Send 🚀
-
-                        </button>
 
                     </div>
+                }
 
-                </div>
+            </div>
+
+
+            <!-- TYPING INDICATOR -->
+            <div id="typingIndicator"
+                 class="typing-indicator">
+            </div>
+
+
+            <!-- FOOTER -->
+            <div class="chat-footer">
+
+                <input type="text"
+                       id="messageInput"
+                       placeholder="Type your message..." />
+
+                <button id="sendBtn">
+                    Send
+                </button>
 
             </div>
 
@@ -111,109 +94,136 @@
 </div>
 
 
-@section Scripts {
+@section Scripts{
 
-    <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
+   <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
 
-    <script>
+<script>
 
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chatHub")
-            .build();
+            const currentUserId =
+        '@currentUserId';
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .build();
 
 
-        const chatBox =
-            document.getElementById("chatBox");
+    // RECEIVE MESSAGE
+    connection.on("ReceiveMessage",
+            function(userId, user, message, time){
 
+            const isMine =
+        userId === currentUserId;
 
-        connection.on("ReceiveMessage",
-            function(user, message, time){
+            const chatBox =
+                document.getElementById("chatBox");
 
-                const firstLetter =
-                    user.charAt(0).toUpperCase();
+            const html = `
+                <div class="message-container ${isMine ? 'mine' : 'other'}">
 
-                chatBox.innerHTML += `
-                    <div class="mb-4">
+                    <div class="message-bubble">
 
-                        <div class="d-flex align-items-center mb-1">
-
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                                 style="width:40px; height:40px; font-weight:bold;">
-
-                                ${firstLetter}
-
-                            </div>
-
-                            <div>
-
-                                <strong class="d-block">
-                                    ${user}
-                                </strong>
-
-                                <small class="text-muted">
-                                    ${time}
-                                </small>
-
-                            </div>
-
+                        <div class="message-user">
+                            ${user}
                         </div>
 
-                        <div class="bg-white shadow-sm rounded-4 p-3 ms-5 border">
-
+                        <div class="message-text">
                             ${message}
+                        </div>
 
+                        <div class="message-time">
+                            ${time}
                         </div>
 
                     </div>
+
+                </div>
+            `;
+
+            chatBox.innerHTML += html;
+
+            scrollToBottom();
+        });
+
+
+    // USER CONNECTED
+    connection.on("UserConnected",
+        function(user, count){
+
+            document.getElementById("onlineCount")
+                .innerText = `Online: ${count}`;
+
+            showSystemMessage(`${user} joined chat`);
+        });
+
+
+    // USER DISCONNECTED
+    connection.on("UserDisconnected",
+        function(user, count){
+
+            document.getElementById("onlineCount")
+                .innerText = `Online: ${count}`;
+
+            showSystemMessage(`${user} left chat`);
+        });
+
+
+    // ONLINE USERS LIST
+    connection.on("OnlineUsers",
+        function(users){
+
+            const usersList =
+                document.getElementById("usersList");
+
+            usersList.innerHTML = "";
+
+            users.forEach(user => {
+
+                usersList.innerHTML += `
+                    <li>${user}</li>
                 `;
-
-                chatBox.scrollTop =
-                    chatBox.scrollHeight;
             });
+        });
 
 
-        connection.start()
-            .then(function () {
+    // TYPING INDICATOR
+    connection.on("UserTyping",
+        function(user){
 
-                chatBox.scrollTop =
-                    chatBox.scrollHeight;
-            })
-            .catch(function(err){
+            const indicator =
+                document.getElementById("typingIndicator");
 
-                return console.error(err.toString());
-            });
+            indicator.innerText =
+                `${user} is typing...`;
 
+            setTimeout(() => {
 
-        function sendMessage() {
+                indicator.innerText = "";
 
-            const input =
-                document.getElementById("messageInput");
-
-            const message =
-                input.value.trim();
-
-            if(message === "")
-                return;
-
-            connection.invoke("SendMessage", message)
-                .catch(function(err){
-
-                    return console.error(err.toString());
-                });
-
-            input.value = "";
-
-            input.focus();
-        }
+            }, 2000);
+        });
 
 
-        document.getElementById("sendBtn")
-            .addEventListener("click", sendMessage);
+    // START CONNECTION
+    connection.start()
+        .catch(function(err){
+
+            return console.error(err.toString());
+
+        });
 
 
-        document.getElementById("messageInput")
-            .addEventListener("keypress",
+    // SEND BUTTON
+    document.getElementById("sendBtn")
+        .addEventListener("click", sendMessage);
+
+
+    // ENTER KEY + TYPING EVENT
+    document.getElementById("messageInput")
+        .addEventListener("keypress",
             function(e){
+
+                connection.invoke("Typing");
 
                 if(e.key === "Enter"){
 
@@ -221,5 +231,61 @@
                 }
             });
 
-    </script>
+
+    // SEND MESSAGE
+    function sendMessage(){
+
+        const input =
+            document.getElementById("messageInput");
+
+        const message =
+            input.value.trim();
+
+        if(message === "")
+            return;
+
+        connection.invoke("SendMessage", message)
+            .catch(function(err){
+
+                return console.error(err.toString());
+
+            });
+
+        input.value = "";
+
+        input.focus();
+    }
+
+
+    // AUTO SCROLL
+    function scrollToBottom(){
+
+        const chatBox =
+            document.getElementById("chatBox");
+
+        chatBox.scrollTop =
+            chatBox.scrollHeight;
+    }
+
+
+    // SYSTEM MESSAGE
+    function showSystemMessage(message){
+
+        const chatBox =
+            document.getElementById("chatBox");
+
+        chatBox.innerHTML += `
+            <div class="system-message">
+                ${message}
+            </div>
+        `;
+
+        scrollToBottom();
+    }
+
+
+    // INITIAL SCROLL
+    scrollToBottom();
+
+</script>
 }

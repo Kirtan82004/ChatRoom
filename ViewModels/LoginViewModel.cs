@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Connectify.Web.ViewModels
+namespace Connectify.ViewModels
 {
     public class LoginViewModel
     {

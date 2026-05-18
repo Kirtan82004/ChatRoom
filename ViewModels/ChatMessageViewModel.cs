@@ -1,4 +1,4 @@
-﻿namespace Connectify.Web.ViewModels
+﻿namespace Connectify.ViewModels
 {
     public class ChatMessageViewModel
     {

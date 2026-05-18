@@ -1,34 +1,30 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Connectify.Web.ViewModels;
-using Connectify.Data;
+﻿using Connectify.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Connectify.Controllers
 {
     [Authorize]
     public class ChatController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly IChatService _chatService;
 
-        public ChatController(AppDbContext context)
+        public ChatController(IChatService chatService)
         {
-            _context = context;
+            _chatService = chatService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var Messages = await _context.ChatMessages
-                .Include(u => u.User)
-                .OrderBy(o => o.SentAt)
-                .Select(s => new ChatMessageViewModel
-                {
-                    UserName = s.User.FullName,
-                    Message = s.Message,
-                    SentAt = s.SentAt
-                }).ToListAsync();
+            var messages =
+                await _chatService.GetMessagesAsync();
 
-            return View(Messages);
+            ViewBag.CurrentUserId = User
+    .FindFirst(System.Security.Claims
+    .ClaimTypes.NameIdentifier)?
+    .Value;
+
+            return View(messages);
         }
     }
 }
